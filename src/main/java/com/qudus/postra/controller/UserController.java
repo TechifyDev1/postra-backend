@@ -45,22 +45,22 @@ public class UserController {
         return ResponseEntity.ok("User created successfully");
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody LoginRequest request) {
+    // @PostMapping("/login")
+    // public ResponseEntity<Object> login(@RequestBody LoginRequest request) {
 
-        System.out.println("***Controller***");
+    //     System.out.println("***Controller***");
 
-        if (request.getUsernameOrEmail() == null || request.getUsernameOrEmail().isBlank()
-                || request.getPassword() == null || request.getPassword().isBlank()) {
-            return ResponseEntity.badRequest().body("Username/email and password are required");
-        }
+    //     if (request.getUsernameOrEmail() == null || request.getUsernameOrEmail().isBlank()
+    //             || request.getPassword() == null || request.getPassword().isBlank()) {
+    //         return ResponseEntity.badRequest().body("Username/email and password are required");
+    //     }
 
-        Optional<Users> optionalUser = userService.findUserByEmailOrUsername(request.getUsernameOrEmail());
+    //     Optional<Users> optionalUser = userService.findUserByEmailOrUsername(request.getUsernameOrEmail());
 
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username/email or password");
-        }
+    //     if (optionalUser.isEmpty()) {
+    //         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username/email or password");
+    //     }
 
-        return ResponseEntity.ok("Login successful");
-    }
+    //     return ResponseEntity.ok("Login successful");
+    // }
 }
