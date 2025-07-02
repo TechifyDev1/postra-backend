@@ -3,8 +3,10 @@ package com.qudus.postra.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
@@ -36,7 +38,9 @@ public class SecurityConfig {
                 @Override
                 public void customize(
                         AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry t) {
-                    t.requestMatchers("/login", "/register").permitAll().anyRequest().authenticated();
+                    t.anyRequest().permitAll();
+                    // requestMatchers("/api/users/login", "/api/users/register").permitAll().anyRequest()
+                    //         .authenticated();
                 }
             };
             Customizer<SessionManagementConfigurer<HttpSecurity>> custSeason = new Customizer<SessionManagementConfigurer<HttpSecurity>>() {
@@ -62,13 +66,9 @@ public class SecurityConfig {
         return provider;
     }
 
-    // @Bean
-    // public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-    //     try {
-    //         return config.getAuthenticationManager();
-    //     } catch (Exception e) {
-    //         System.out.println(e.getMessage());
-    //         throw new Exception("Unable to configure authentication.");
-    //     }
-    // }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
 }

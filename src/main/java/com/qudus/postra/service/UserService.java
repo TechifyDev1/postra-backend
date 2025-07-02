@@ -2,6 +2,8 @@ package com.qudus.postra.service;
 
 import java.util.Optional;
 
+import javax.security.sasl.AuthenticationException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +29,12 @@ public class UserService {
     private UserProfileRepo userProfileRepo;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+    @Autowired
+    AuthenticationManager authManager;
+
+    @Autowired
+    JwtService jwtService;
 
     public boolean createUser(String username, String password, String email, String fullName) {
         try {
@@ -56,21 +64,30 @@ public class UserService {
     }
 
     // public Optional<Users> findUserByEmailOrUsername(String emailOrUsername) {
-    //     System.out.println("***USerService***");
-    //     if (emailOrUsername.contains("@")) {
-    //         System.out.println("***USerService Email***");
-    //         return userRepo.findUserByEmail(emailOrUsername);
-    //     } else {
-    //         System.out.println("***USerService username***");
-    //         return userRepo.findUserByUserProfile_UserName(emailOrUsername);
-    //     }
+    // System.out.println("***USerService***");
+    // if (emailOrUsername.contains("@")) {
+    // System.out.println("***USerService Email***");
+    // return userRepo.findUserByEmail(emailOrUsername);
+    // } else {
+    // System.out.println("***USerService username***");
+    // return userRepo.findUserByUserProfile_UserName(emailOrUsername);
+    // }
     // }
 
-    // public String verify(String username, String password) {
-    //     Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-    //     if (authentication.isAuthenticated()) {
-            
-    //     }
-    // }
+    public String verify(String username, String password) {
+        try {
+            Authentication authentication = authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password));
+
+            if (authentication.isAuthenticated()) {
+                return jwtService.generateToken(username);
+            } else {
+                return "fail";
+            }
+        } catch (org.springframework.security.core.AuthenticationException e) {
+            System.out.println("failed " + e.getMessage());
+            return "fail"; // Or throw your own exception
+        }
+    }
 
 }
