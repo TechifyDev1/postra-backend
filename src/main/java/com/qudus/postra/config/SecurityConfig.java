@@ -15,7 +15,9 @@ import org.springframework.security.config.annotation.web.configurers.SessionMan
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.qudus.postra.filters.JwtFilter;
 import com.qudus.postra.security.CustomUserDetailService;
 
 @Configuration
@@ -24,6 +26,9 @@ public class SecurityConfig {
 
     @Autowired
     private CustomUserDetailService userDetailService;
+
+    @Autowired
+    JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -38,9 +43,8 @@ public class SecurityConfig {
                 @Override
                 public void customize(
                         AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry t) {
-                    t.anyRequest().permitAll();
-                    // requestMatchers("/api/users/login", "/api/users/register").permitAll().anyRequest()
-                    //         .authenticated();
+                    t.requestMatchers("/api/users/login", "/api/users/register").permitAll().anyRequest()
+                            .authenticated();
                 }
             };
             Customizer<SessionManagementConfigurer<HttpSecurity>> custSeason = new Customizer<SessionManagementConfigurer<HttpSecurity>>() {
@@ -50,8 +54,10 @@ public class SecurityConfig {
                 }
             };
 
-            return http.csrf(custCsrf).authorizeHttpRequests(custReqConf).httpBasic(Customizer.withDefaults())
-                    .sessionManagement(custSeason).authenticationProvider(authenticationProvider()).build();
+            return http.csrf(custCsrf).authorizeHttpRequests(custReqConf)
+                    .sessionManagement(custSeason)
+                    .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                    .authenticationProvider(authenticationProvider()).build();
         } catch (Exception e) {
             System.out.println("Unable to configure security");
             throw new Exception("unable to configure security " + e);

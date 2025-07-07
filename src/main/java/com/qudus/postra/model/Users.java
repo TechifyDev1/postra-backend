@@ -22,7 +22,7 @@ public class Users {
     @Column(name = "created_at", updatable = false)
     private Date createdAt = new Date();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private UserProfile userProfile;
 
     // Getters and Setters

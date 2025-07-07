@@ -1,9 +1,5 @@
 package com.qudus.postra.service;
 
-import java.util.Optional;
-
-import javax.security.sasl.AuthenticationException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -86,7 +82,7 @@ public class UserService {
             }
         } catch (org.springframework.security.core.AuthenticationException e) {
             System.out.println("failed " + e.getMessage());
-            return "fail"; // Or throw your own exception
+            return "fail";
         }
     }
 

@@ -1,18 +1,18 @@
 package com.qudus.postra.controller;
 
+import java.time.Duration;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
 
 import com.qudus.postra.dtos.LoginRequest;
 import com.qudus.postra.dtos.RegisterRequest;
-import com.qudus.postra.model.Users;
 import com.qudus.postra.service.UserService;
-
-import java.util.Optional;
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @RestController
 @RequestMapping("/api/users")
@@ -46,21 +46,42 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(
+            @RequestBody LoginRequest request,
+            @RequestHeader(name = "X-Client-Type", required = false) String clientType) {
 
         System.out.println("***Controller***");
+
+        if (clientType == null || clientType.isBlank()) {
+            return ResponseEntity.badRequest().body("Client type is required");
+        }
 
         if (request.getUsernameOrEmail() == null || request.getUsernameOrEmail().isBlank()
                 || request.getPassword() == null || request.getPassword().isBlank()) {
             return ResponseEntity.badRequest().body("Username/email and password are required");
         }
 
-        String success = userService.verify(request.getUsernameOrEmail(), request.getPassword());
-        
-        if (success.toLowerCase() == "fail") {
-            return ResponseEntity.badRequest().body("Unable to verify users");
+        String jwt = userService.verify(request.getUsernameOrEmail(), request.getPassword());
+
+        if ("fail".equalsIgnoreCase(jwt)) {
+            return ResponseEntity.badRequest().body("Unable to verify user");
         }
 
-        return ResponseEntity.ok(success);
+        if ("web".equalsIgnoreCase(clientType)) {
+            ResponseCookie cookie = ResponseCookie.from("token", jwt)
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(Duration.ofDays(1))
+                    .sameSite("Strict")
+                    .build();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body(Map.of("message", "Login successful"));
+        }
+
+        return ResponseEntity.ok(Map.of("token", jwt));
     }
+
 }
