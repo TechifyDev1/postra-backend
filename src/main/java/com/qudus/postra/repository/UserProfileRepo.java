@@ -9,4 +9,6 @@ import com.qudus.postra.model.UserProfile;
 
 public interface UserProfileRepo extends JpaRepository<UserProfile, UUID> {
     Optional<UserProfile> findUserByUserName(String userName);
+
+    Optional<UserProfile> findByUser_Email(String email);
 }

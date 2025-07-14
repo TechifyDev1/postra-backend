@@ -55,9 +55,10 @@ public class SecurityConfig {
             };
 
             return http.csrf(custCsrf).authorizeHttpRequests(custReqConf)
+                    // .httpBasic(Customizer.withDefaults())
                     .sessionManagement(custSeason)
                     .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                    .authenticationProvider(authenticationProvider()).build();
+                    .build();
         } catch (Exception e) {
             System.out.println("Unable to configure security");
             throw new Exception("unable to configure security " + e);

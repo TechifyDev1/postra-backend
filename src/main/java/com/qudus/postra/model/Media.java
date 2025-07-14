@@ -2,13 +2,14 @@ package com.qudus.postra.model;
 
 import jakarta.persistence.*;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
+@Table(name = "media")
 public class Media {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-incremented primary key
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
@@ -25,13 +26,13 @@ public class Media {
     @Column(name = "uploaded_at", updatable = false)
     private Date uploadedAt = new Date();
 
-    // Getters and setters
+    // ====== Getters and Setters ======
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

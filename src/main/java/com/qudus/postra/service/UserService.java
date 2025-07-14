@@ -76,7 +76,17 @@ public class UserService {
                     new UsernamePasswordAuthenticationToken(username, password));
 
             if (authentication.isAuthenticated()) {
-                return jwtService.generateToken(username);
+                // Find user by username or email
+                Users user;
+                if (username.contains("@")) {
+                    user = userRepo.findUserByEmail(username).orElse(null);
+                } else {
+                    user = userRepo.findUserByUserProfile_UserName(username).orElse(null);
+                }
+                if (user == null)
+                    return "fail";
+                // Always use email as JWT subject
+                return jwtService.generateToken(user.getEmail());
             } else {
                 return "fail";
             }

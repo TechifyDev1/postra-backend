@@ -2,17 +2,16 @@ package com.qudus.postra.model;
 
 import jakarta.persistence.*;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(name = "userprofile")
 public class UserProfile {
 
+    // ID is shared with the User entity (not auto-generated here)
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "BINARY(16)")
-    private UUID id;
+    private Long id;
 
+    // MapsId means this profile's ID is the same as the user's ID
     @OneToOne
     @MapsId
     @JoinColumn(name = "id")
@@ -34,13 +33,13 @@ public class UserProfile {
     @Column(name = "created_at", updatable = false)
     private Date createdAt = new Date();
 
-    // Getters and Setters
+    // ====== Getters and Setters ======
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
