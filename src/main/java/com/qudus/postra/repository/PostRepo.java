@@ -9,4 +9,5 @@ import com.qudus.postra.model.Posts;
 
 public interface PostRepo extends JpaRepository<Posts, UUID> {
     Optional<Posts> findBySlug(String slug);
+    void deleteBySlug(String slug);
 }

@@ -3,8 +3,11 @@ package com.qudus.postra.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,5 +43,25 @@ public class PostController {
         }
         return ResponseEntity.ok()
                 .body(postService.create(post.getTitle(), post.getSubTitle(), post.getContent(), post.getPostBanner()));
+    }
+
+    @DeleteMapping("/delete/{slug}")
+    public ResponseEntity<Object> deletePost(@PathVariable String slug) {
+        if (slug.isEmpty() || slug.isBlank() || slug == null) {
+            return ResponseEntity.badRequest().body("Slug must be provided");
+        }
+        boolean success = postService.delete(slug);
+        if (success) {
+            return ResponseEntity.ok().body("Deleted");
+        }
+        return ResponseEntity.badRequest().body("Something went wrong");
+    }
+
+    @PutMapping("/update/{slug}")
+    public ResponseEntity<Object> updatePost(@PathVariable String slug, @RequestBody PostDto post) {
+        if (post != null) {
+            return ResponseEntity.ok().body(postService.update(slug, post.getContent(), post.getTitle(), post.getSubTitle(), post.getPostBanner()));
+        }
+        return ResponseEntity.badRequest().body("Something went wrong");
     }
 }

@@ -53,4 +53,83 @@ public class PostsService {
                 slugString,
                 userProfile.get().getUserName());
     }
+
+    public boolean delete(String slug) {
+        try {
+            // Get logged-in user's email
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+            if (email == null || email.isBlank()) {
+                return false;
+            }
+
+            // Find the post by slug
+            var postOptional = postRepo.findBySlug(slug);
+            if (postOptional.isEmpty()) {
+                return false;
+            }
+
+            var post = postOptional.get();
+            var authorUsername = post.getAuthor().getUserName(); // Or getUserProfile().getUserName()
+
+            // Find the profile of the logged-in user
+            var profileOptional = profileRepo.findByUser_Email(email);
+            if (profileOptional.isEmpty()) {
+                return false;
+            }
+
+            var currentUsername = profileOptional.get().getUserName();
+
+            // Compare usernames
+            if (currentUsername.equals(authorUsername)) {
+                postRepo.delete(post);
+                return true;
+            }
+
+            return false;
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public PostDto update(String slug, String content, String title, String subTitle, String postBanner) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (email == null || email.isBlank()) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        Posts post = postRepo.findBySlug(slug)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        UserProfile profile = profileRepo.findByUser_Email(email)
+                .orElseThrow(() -> new RuntimeException("User profile not found"));
+
+        if (!profile.getUserName().equals(post.getAuthor().getUserName())) {
+            throw new RuntimeException("Unauthorized to update this post");
+        }
+
+        if (content != null)
+            post.setContent(content);
+        if (title != null)
+            post.setTitle(title);
+        if (subTitle != null)
+            post.setSubTitle(subTitle);
+        if (postBanner != null)
+            post.setHeaderImage(postBanner);
+
+        Posts updated = postRepo.save(post);
+
+        return new PostDto(
+                updated.getTitle(),
+                updated.getSubTitle(),
+                updated.getHeaderImage(),
+                updated.getAuthor().getFullName(),
+                updated.getId(),
+                updated.getContent(),
+                updated.getSlug(),
+                updated.getAuthor().getUserName());
+    }
+
 }
