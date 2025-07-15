@@ -15,7 +15,7 @@ public class Posts {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String title;
 
-    @Column(name = "subtitle", nullable = false)
+    @Column(name = "subtitle", nullable = true)
     private String subTitle;
 
     @Column(columnDefinition = "TEXT", nullable = false)

@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.qudus.postra.dtos.PostDto;
 import com.qudus.postra.model.Posts;
@@ -94,30 +96,36 @@ public class PostsService {
         }
     }
 
-    public PostDto update(String slug, String content, String title, String subTitle, String postBanner) {
+    public PostDto update(String slug, PostDto postDto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         if (email == null || email.isBlank()) {
-            throw new RuntimeException("Unauthorized");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
 
         Posts post = postRepo.findBySlug(slug)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
         UserProfile profile = profileRepo.findByUser_Email(email)
-                .orElseThrow(() -> new RuntimeException("User profile not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User profile not found"));
 
         if (!profile.getUserName().equals(post.getAuthor().getUserName())) {
-            throw new RuntimeException("Unauthorized to update this post");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You’re not allowed to update this post");
         }
 
-        if (content != null)
-            post.setContent(content);
-        if (title != null)
-            post.setTitle(title);
-        if (subTitle != null)
-            post.setSubTitle(subTitle);
-        if (postBanner != null)
-            post.setHeaderImage(postBanner);
+        if (postDto.getTitle() != null) {
+            post.setTitle(postDto.getTitle());
+            Slug slug2 = new Slug(postDto.getTitle());
+            post.setSlug(slug2.generateUniqueSlug());
+        }
+        if (postDto.getSubTitle() != null) {
+            post.setSubTitle(postDto.getSubTitle());
+        }
+        if (postDto.getContent() != null) {
+            post.setContent(postDto.getContent());
+        }
+        if (postDto.getPostBanner() != null) {
+            post.setHeaderImage(postDto.getPostBanner());
+        }
 
         Posts updated = postRepo.save(post);
 

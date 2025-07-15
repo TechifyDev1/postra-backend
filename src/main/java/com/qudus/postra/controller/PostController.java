@@ -60,7 +60,7 @@ public class PostController {
     @PutMapping("/update/{slug}")
     public ResponseEntity<Object> updatePost(@PathVariable String slug, @RequestBody PostDto post) {
         if (post != null) {
-            return ResponseEntity.ok().body(postService.update(slug, post.getContent(), post.getTitle(), post.getSubTitle(), post.getPostBanner()));
+            return ResponseEntity.ok().body(postService.update(slug, post));
         }
         return ResponseEntity.badRequest().body("Something went wrong");
     }

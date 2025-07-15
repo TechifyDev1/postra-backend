@@ -3,6 +3,7 @@ package com.qudus.postra.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -43,8 +44,11 @@ public class SecurityConfig {
                 @Override
                 public void customize(
                         AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry t) {
-                    t.requestMatchers("/api/users/login", "/api/users/register").permitAll().anyRequest()
-                            .authenticated();
+                    t
+                            .requestMatchers("/api/users/login", "/api/users/register", "/error").permitAll()
+                            .requestMatchers(HttpMethod.PUT, "/api/users/update/**").authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/api/posts/update/**").authenticated()
+                            .anyRequest().authenticated();
                 }
             };
             Customizer<SessionManagementConfigurer<HttpSecurity>> custSeason = new Customizer<SessionManagementConfigurer<HttpSecurity>>() {
@@ -67,15 +71,28 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailService);
-        provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
-        return provider;
+        try {
+
+            DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+            provider.setUserDetailsService(userDetailService);
+            provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
+            return provider;
+        } catch (Exception e) {
+            System.out.println("authentication provider");
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+        try {
+
+            return config.getAuthenticationManager();
+        } catch (Exception e) {
+            System.out.println("auth manager " + e.getMessage());
+            return null;
+        }
     }
 
 }
