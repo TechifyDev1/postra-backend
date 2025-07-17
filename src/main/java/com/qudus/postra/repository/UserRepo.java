@@ -1,13 +1,12 @@
 package com.qudus.postra.repository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.qudus.postra.model.Users;
 
-public interface UserRepo extends JpaRepository<Users, UUID> {
+public interface UserRepo extends JpaRepository<Users, Integer> {
 
     Optional<Users> findUserByEmail(String email);
 
