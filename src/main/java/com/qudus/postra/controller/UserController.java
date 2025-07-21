@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 
 import com.qudus.postra.dtos.LoginRequest;
 import com.qudus.postra.dtos.RegisterRequest;
+import com.qudus.postra.dtos.UsersDto;
 import com.qudus.postra.service.UserService;
 
 @RestController
@@ -70,18 +71,29 @@ public class UserController {
         if ("web".equalsIgnoreCase(clientType)) {
             ResponseCookie cookie = ResponseCookie.from("token", jwt)
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .path("/")
                     .maxAge(Duration.ofDays(1))
-                    .sameSite("Strict")
+                    .sameSite("None")
+                    .secure(true)
                     .build();
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(Map.of("message", "Login successful"));
+                    .body(Map.of("message", "Login successful", "status", "success"));
         }
 
         return ResponseEntity.ok(Map.of("token", jwt));
+    }
+
+    @GetMapping("/profile/{username}")
+    public ResponseEntity<?> getUserProfile(@PathVariable String username) {
+        UsersDto userDto = userService.getUser(username);
+        if (userDto == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "User not found", "status", "fail"));
+        }
+        return ResponseEntity.ok(userDto);
     }
 
 }

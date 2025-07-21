@@ -73,4 +73,16 @@ public class Users {
     public void setUserProfile(UserProfile userProfile) {
         this.userProfile = userProfile;
     }
+    public List<Followers> getFollowing() {
+        return following;
+    }
+    public void setFollowing(List<Followers> following) {
+        this.following = following;
+    }
+    public List<Followers> getFollowers() {
+        return followers;
+    }
+    public void setFollowers(List<Followers> followers) {
+        this.followers = followers;
+    }
 }
