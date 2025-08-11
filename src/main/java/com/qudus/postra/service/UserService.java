@@ -111,6 +111,7 @@ public class UserService {
             currentUserDto.setNumOfFollowers(user.getFollowers().size());
             currentUserDto.setNumOfFollowing(user.getFollowing().size());
             currentUserDto.setProfilePictureUrl(user.getUserProfile().getProfilePic());
+            currentUserDto.setCurrentUser(true);
             return currentUserDto;
         } else if (user == null) {
             return null; // User not found

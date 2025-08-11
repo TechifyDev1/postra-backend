@@ -88,6 +88,7 @@ public class UserController {
 
     @GetMapping("/profile/{username}")
     public ResponseEntity<?> getUserProfile(@PathVariable String username) {
+        System.out.println("Fetching profile for user: " + username);
         UsersDto userDto = userService.getUser(username);
         if (userDto == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
