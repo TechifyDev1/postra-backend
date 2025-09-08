@@ -32,6 +32,7 @@ public class PostController {
 
     @PostMapping("/create")
     public ResponseEntity<Object> createPost(@RequestBody PostDto post) {
+        System.out.println("Incoming post: " + post);
         System.out.println("***Creating post***");
         if (post.getTitle() == null || post.getContent() == null || post.getTitle().isEmpty()
                 || post.getContent().isEmpty() || post.getSubTitle() == null) {
