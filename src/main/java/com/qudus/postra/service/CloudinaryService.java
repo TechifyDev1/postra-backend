@@ -24,13 +24,24 @@ public class CloudinaryService {
         this.cloudinary = new Cloudinary(config);
     }
 
-    public String uploadAndReturnUrl(MultipartFile file) {
+    public Map<Object, Object> uploadAndReturnUrl(MultipartFile file) {
         try {
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+            Map<Object, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
             System.out.println(uploadResult);
-            return uploadResult.toString();
+            return uploadResult;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public boolean delete(String publicId) {
+        try {
+            Map<?, ?> result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+            System.out.println(result);
+            return result.get("result").equals("ok");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
         }
     }
 }
