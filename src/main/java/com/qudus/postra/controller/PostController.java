@@ -1,6 +1,7 @@
 package com.qudus.postra.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,9 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.qudus.postra.dtos.PostDto;
+import com.qudus.postra.dtos.PostDto1;
+import com.qudus.postra.dtos.PostsMapper;
+import com.qudus.postra.model.Posts;
 import com.qudus.postra.service.PostsService;
 
 @RestController
@@ -64,5 +69,11 @@ public class PostController {
             return ResponseEntity.ok().body(postService.update(slug, post));
         }
         return ResponseEntity.badRequest().body("Something went wrong");
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<Page<PostDto1>> getPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        Page<Posts> posts = postService.getPosts(page, size);
+        return ResponseEntity.ok().body(posts.map(PostsMapper::toDto));
     }
 }
