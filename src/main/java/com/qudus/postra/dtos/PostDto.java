@@ -1,5 +1,7 @@
 package com.qudus.postra.dtos;
 
+import java.util.Date;
+
 public class PostDto {
     private String title;
     private String subTitle;
@@ -9,9 +11,27 @@ public class PostDto {
     private Long id;
     private String slug;
     private String content;
+    private String authorProfilePic;
+    private Date createdAt;
+
+    public String getAuthorProfilePic() {
+        return authorProfilePic;
+    }
+
+    public void setAuthorProfilePic(String authorProfilePic) {
+        this.authorProfilePic = authorProfilePic;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 
     public PostDto(String title, String subTitle, String postBanner, String authorFullName, Long id,
-            String content, String slug, String authorUsername) {
+            String content, String slug, String authorUsername, String authorProfilePic, Date createdAt) {
         this.title = title;
         this.authorUsername = authorUsername;
         this.postBanner = postBanner;
@@ -20,6 +40,8 @@ public class PostDto {
         this.content = content;
         this.slug = slug;
         this.subTitle = subTitle;
+        this.authorProfilePic = authorProfilePic;
+        this.createdAt = createdAt;
     }
 
     @Override

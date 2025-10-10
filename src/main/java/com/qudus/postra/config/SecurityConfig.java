@@ -52,7 +52,7 @@ public class SecurityConfig {
             Customizer<CorsConfigurer<HttpSecurity>> custCors = new Customizer<CorsConfigurer<HttpSecurity>>() {
                 @Override
                 public void customize(CorsConfigurer<HttpSecurity> t) {
-                    t.configurationSource(corsConfigurationSource());
+                    t.configurationSource(corsConfigurationSource()).and();
                 }
             };
 
@@ -63,7 +63,7 @@ public class SecurityConfig {
                         public void customize(
                                 AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry t) {
                             t
-                                .requestMatchers("/api/users/login", "/api/users/register", "/error", "/api/users/profile/**", "/api/upload", "/api/posts/").permitAll()
+                                .requestMatchers("/api/users/login", "/api/users/register", "/error", "/api/users/profile/**", "/api/upload", "/api/posts/", "/api/posts/**").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/api/users/update/**").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/api/posts/update/**").authenticated()
                                 .anyRequest().authenticated();

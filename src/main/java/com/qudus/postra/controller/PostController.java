@@ -1,5 +1,7 @@
 package com.qudus.postra.controller;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,8 @@ import com.qudus.postra.dtos.PostDto1;
 import com.qudus.postra.dtos.PostsMapper;
 import com.qudus.postra.model.Posts;
 import com.qudus.postra.service.PostsService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -72,8 +76,15 @@ public class PostController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<Page<PostDto1>> getPosts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+    public ResponseEntity<Page<PostDto1>> getPosts(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Page<Posts> posts = postService.getPosts(page, size);
         return ResponseEntity.ok().body(posts.map(PostsMapper::toDto));
+    }
+
+    @GetMapping("/{username}/{slug}")
+    public ResponseEntity<Object> getAPost(@PathVariable String username, @PathVariable String slug) {
+        PostDto post = postService.getAPost(username, slug);
+        return ResponseEntity.ok(post);
     }
 }

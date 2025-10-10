@@ -57,7 +57,7 @@ public class PostsService {
         Posts savedPost = postRepo.save(post);
         return new PostDto(title, subTitle, headerImage, userProfile.get().getFullName(), savedPost.getId(), content,
                 slugString,
-                userProfile.get().getUserName());
+                userProfile.get().getUserName(), post.getAuthor().getProfilePic(), post.getCreatedAt());
     }
 
     public boolean delete(String slug) {
@@ -141,14 +141,21 @@ public class PostsService {
                 updated.getId(),
                 updated.getContent(),
                 updated.getSlug(),
-                updated.getAuthor().getUserName());
+                updated.getAuthor().getUserName(), updated.getAuthor().getProfilePic(), updated.getCreatedAt());
     }
-
 
     public Page<Posts> getPosts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return postRepo.findAll(pageable);
     }
-    
+
+    public PostDto getAPost(String username, String slug) {
+        Posts post = postRepo.findByAuthorUserNameAndSlug(username, slug).get();
+        System.out.println(post);
+        PostDto returningPost = new PostDto(post.getTitle(), post.getSubTitle(), post.getHeaderImage(),
+                post.getAuthor().getFullName(), post.getId(), post.getContent(), post.getSlug(),
+                post.getAuthor().getUserName(), post.getAuthor().getProfilePic(), post.getCreatedAt());
+        return returningPost;
+    }
 
 }

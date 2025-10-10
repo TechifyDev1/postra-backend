@@ -11,6 +11,8 @@ public class PostsMapper {
                 posts.getContent(),
                 posts.getHeaderImage(),
                 posts.getAuthor().getUserName(),
-                posts.getAuthor().getProfilePic());
+                posts.getAuthor().getProfilePic(),
+                posts.getSlug()
+                );
     }
 }

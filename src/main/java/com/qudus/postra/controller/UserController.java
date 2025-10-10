@@ -15,6 +15,8 @@ import com.qudus.postra.dtos.RegisterRequest;
 import com.qudus.postra.dtos.UsersDto;
 import com.qudus.postra.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -49,7 +51,8 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody LoginRequest request,
-            @RequestHeader(name = "X-Client-Type", required = false) String clientType) {
+            @RequestHeader(name = "X-Client-Type", required = false) String clientType,
+            HttpServletRequest httpServletRequest) {
 
         System.out.println("***Controller***");
 
@@ -68,14 +71,15 @@ public class UserController {
             return ResponseEntity.badRequest().body("Unable to verify user");
         }
 
+        // boolean isLocal = "localhost".equalsIgnoreCase(httpServletRequest.getServerName());
+
         if ("web".equalsIgnoreCase(clientType)) {
             ResponseCookie cookie = ResponseCookie.from("token", jwt)
                     .httpOnly(true)
                     .secure(true)
                     .path("/")
                     .maxAge(Duration.ofDays(1))
-                    .sameSite("None")
-                    .secure(true)
+                    .sameSite("Lax")
                     .build();
 
             return ResponseEntity.ok()
