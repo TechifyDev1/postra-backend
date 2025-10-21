@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.qudus.postra.dtos.PostDto;
 import com.qudus.postra.model.Posts;
 import com.qudus.postra.model.UserProfile;
+import com.qudus.postra.repository.LikeRepo;
 import com.qudus.postra.repository.PostRepo;
 import com.qudus.postra.repository.UserProfileRepo;
 import com.qudus.postra.utils.Slug;
@@ -27,6 +28,9 @@ public class PostsService {
 
     @Autowired
     private UserProfileRepo profileRepo;
+
+    @Autowired
+    private LikeRepo likeRepository;
 
     public List<Posts> getAll() {
         return postRepo.findAll();
@@ -55,9 +59,10 @@ public class PostsService {
         post.setHeaderImage(headerImage);
         post.setSubTitle(subTitle);
         Posts savedPost = postRepo.save(post);
+        // New Post has zero likes initially
         return new PostDto(title, subTitle, headerImage, userProfile.get().getFullName(), savedPost.getId(), content,
                 slugString,
-                userProfile.get().getUserName(), post.getAuthor().getProfilePic(), post.getCreatedAt());
+                userProfile.get().getUserName(), post.getAuthor().getProfilePic(), 0L, post.getCreatedAt());
     }
 
     public boolean delete(String slug) {
@@ -133,6 +138,8 @@ public class PostsService {
 
         Posts updated = postRepo.save(post);
 
+        long likeCount = likeRepository.countByPost(updated);
+
         return new PostDto(
                 updated.getTitle(),
                 updated.getSubTitle(),
@@ -141,20 +148,30 @@ public class PostsService {
                 updated.getId(),
                 updated.getContent(),
                 updated.getSlug(),
-                updated.getAuthor().getUserName(), updated.getAuthor().getProfilePic(), updated.getCreatedAt());
+                updated.getAuthor().getUserName(),
+                updated.getAuthor().getProfilePic(),
+                likeCount,
+                updated.getCreatedAt());
     }
 
     public Page<Posts> getPosts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return postRepo.findAll(pageable);
+        Page<Posts> posts = postRepo.findAll(pageable);
+        posts.getContent().forEach(post -> {
+            long likeCount = likeRepository.countByPostSlug(post.getSlug());
+            post.setLikeCounts(likeCount);
+            System.out.println("Post: " + post.getTitle() + ", Likes: " + likeCount);
+        });
+        return posts;
     }
 
     public PostDto getAPost(String username, String slug) {
         Posts post = postRepo.findByAuthorUserNameAndSlug(username, slug).get();
         System.out.println(post);
+        long likeCount = likeRepository.countByPost(post);
         PostDto returningPost = new PostDto(post.getTitle(), post.getSubTitle(), post.getHeaderImage(),
                 post.getAuthor().getFullName(), post.getId(), post.getContent(), post.getSlug(),
-                post.getAuthor().getUserName(), post.getAuthor().getProfilePic(), post.getCreatedAt());
+                post.getAuthor().getUserName(), post.getAuthor().getProfilePic(), likeCount, post.getCreatedAt());
         return returningPost;
     }
 

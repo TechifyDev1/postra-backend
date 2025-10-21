@@ -8,5 +8,5 @@ public record PostDto1(
                 String postBanner,
                 String username,
                 String profilePic,
-                String slug) {
+                String slug, String authorFullName, long likeCount) {
 }

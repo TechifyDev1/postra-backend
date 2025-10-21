@@ -27,6 +27,18 @@ public class Posts {
     @Column(nullable = false, unique = true)
     private String slug;
 
+
+    @Transient
+    private long likeCounts;
+
+    public long getLikeCounts() {
+        return likeCounts;
+    }
+
+    public void setLikeCounts(long likeCounts) {
+        this.likeCounts = likeCounts;
+    }
+
     public String getSubTitle() {
         return subTitle;
     }
@@ -66,7 +78,19 @@ public class Posts {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> mediaList;
 
+    // @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval =
+    // true)
+    // private List<Like> likesList;
+
     // ====== Getters and Setters ======
+
+    // public List<Like> getLikesList() {
+    // return likesList;
+    // }
+
+    // public void setLikesList(List<Like> likesList) {
+    // this.likesList = likesList;
+    // }
 
     public Long getId() {
         return id;

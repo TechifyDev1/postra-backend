@@ -12,6 +12,7 @@ public class PostDto {
     private String slug;
     private String content;
     private String authorProfilePic;
+    private long likeCount;
     private Date createdAt;
 
     public String getAuthorProfilePic() {
@@ -31,7 +32,7 @@ public class PostDto {
     }
 
     public PostDto(String title, String subTitle, String postBanner, String authorFullName, Long id,
-            String content, String slug, String authorUsername, String authorProfilePic, Date createdAt) {
+            String content, String slug, String authorUsername, String authorProfilePic, long likeCount, Date createdAt) {
         this.title = title;
         this.authorUsername = authorUsername;
         this.postBanner = postBanner;
@@ -42,6 +43,7 @@ public class PostDto {
         this.subTitle = subTitle;
         this.authorProfilePic = authorProfilePic;
         this.createdAt = createdAt;
+        this.likeCount = likeCount;
     }
 
     @Override
@@ -113,6 +115,14 @@ public class PostDto {
 
     public void setSubTitle(String subTitle) {
         this.subTitle = subTitle;
+    }
+
+    public long getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(long likeCount) {
+        this.likeCount = likeCount;
     }
 
 }

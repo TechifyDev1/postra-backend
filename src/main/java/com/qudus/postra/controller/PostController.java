@@ -1,6 +1,5 @@
 package com.qudus.postra.controller;
 
-import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,7 +21,6 @@ import com.qudus.postra.dtos.PostsMapper;
 import com.qudus.postra.model.Posts;
 import com.qudus.postra.service.PostsService;
 
-import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/posts")
