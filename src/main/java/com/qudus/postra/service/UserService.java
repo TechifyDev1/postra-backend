@@ -100,10 +100,23 @@ public class UserService {
     }
 
     public UsersDto getUser(String username) {
-        // Check if user is the current user
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Users user = userRepo.findUserByUserProfile_UserName(username).orElse(null);
-        if (auth != null && auth.isAuthenticated() && auth.getName().equals(username) && user != null) {
+
+        String lookupUsername = "me".equals(username) ? auth.getName() : username;
+
+
+        Users user = userRepo.findUserByUserProfile_UserName(lookupUsername).orElse(null);
+
+
+        if (user == null) {
+            return null;
+        }
+
+        System.out.println("User email: " + user.getEmail());
+
+        boolean isCurrentUser = auth != null && auth.isAuthenticated() && auth.getName().equals(lookupUsername);
+        System.out.println("Auth name:" + auth.getName());
+        if (isCurrentUser) {
             CurrentUserDto currentUserDto = new CurrentUserDto();
             currentUserDto.setEmail(user.getEmail());
             currentUserDto.setFullName(user.getUserProfile().getFullName());
@@ -113,10 +126,7 @@ public class UserService {
             currentUserDto.setProfilePictureUrl(user.getUserProfile().getProfilePic());
             currentUserDto.setCurrentUser(true);
             return currentUserDto;
-        } else if (user == null) {
-            return null; // User not found
         } else {
-            // If not current user, return public profile
             UsersDto userDto = new UsersDto();
             userDto.setFullName(user.getUserProfile().getFullName());
             userDto.setUsername(user.getUserProfile().getUserName());

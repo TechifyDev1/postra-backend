@@ -40,7 +40,7 @@ public class LikeService {
 
         Optional<Users> user = userRepo.findUserByEmail(email);
         if (user.isEmpty()) {
-            return Map.of("message", "No logged-in user found");
+            return Map.of("error", "No logged-in user found");
         }
 
         boolean isLiked = likeRepo.existsByUserAndPost(user.get(), post.get());

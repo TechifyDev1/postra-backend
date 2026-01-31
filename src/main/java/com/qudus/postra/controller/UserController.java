@@ -1,18 +1,20 @@
 package com.qudus.postra.controller;
 
 import java.time.Duration;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpHeaders;
 
 import com.qudus.postra.dtos.LoginRequest;
 import com.qudus.postra.dtos.RegisterRequest;
 import com.qudus.postra.dtos.UsersDto;
+import com.qudus.postra.model.ApiResponse;
 import com.qudus.postra.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,56 +51,77 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(
+    public ResponseEntity<ApiResponse<UsersDto>> login(
             @RequestBody LoginRequest request,
             @RequestHeader(name = "X-Client-Type", required = false) String clientType,
             HttpServletRequest httpServletRequest) {
 
         System.out.println("***Controller***");
 
-        if (clientType == null || clientType.isBlank()) {
-            return ResponseEntity.badRequest().body("Client type is required");
+        try {
+            if (clientType == null || clientType.isBlank()) {
+                throw new Exception("Client Type is required");
+            }
+    
+            if (request.getUsernameOrEmail() == null || request.getUsernameOrEmail().isBlank()
+                    || request.getPassword() == null || request.getPassword().isBlank()) {
+                throw new Exception("Username/email and password are required");
+            }
+    
+            String jwt = userService.verify(request.getUsernameOrEmail(), request.getPassword());
+    
+            if ("fail".equalsIgnoreCase(jwt)) {
+                throw new Exception("Unable to verify user");
+            }
+    
+            // boolean isLocal = "localhost".equalsIgnoreCase(httpServletRequest.getServerName());
+    
+            if ("web".equalsIgnoreCase(clientType)) {
+                ResponseCookie cookie = ResponseCookie.from("token", jwt)
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(Duration.ofDays(1))
+                        .sameSite("Lax")
+                        .build();
+                ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", "Login successful", userService.getUser(request.getUsernameOrEmail()), null);
+    
+                return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
+            }
+            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", jwt, userService.getUser(request.getUsernameOrEmail()), null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+            
+        } catch (Exception e) {
+            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("error", "Error logging you in", null, e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        if (request.getUsernameOrEmail() == null || request.getUsernameOrEmail().isBlank()
-                || request.getPassword() == null || request.getPassword().isBlank()) {
-            return ResponseEntity.badRequest().body("Username/email and password are required");
-        }
-
-        String jwt = userService.verify(request.getUsernameOrEmail(), request.getPassword());
-
-        if ("fail".equalsIgnoreCase(jwt)) {
-            return ResponseEntity.badRequest().body("Unable to verify user");
-        }
-
-        // boolean isLocal = "localhost".equalsIgnoreCase(httpServletRequest.getServerName());
-
-        if ("web".equalsIgnoreCase(clientType)) {
-            ResponseCookie cookie = ResponseCookie.from("token", jwt)
-                    .httpOnly(true)
-                    .secure(true)
-                    .path("/")
-                    .maxAge(Duration.ofDays(1))
-                    .sameSite("Lax")
-                    .build();
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(Map.of("message", "Login successful", "status", "success"));
-        }
-
-        return ResponseEntity.ok(Map.of("token", jwt));
     }
 
     @GetMapping("/profile/{username}")
-    public ResponseEntity<?> getUserProfile(@PathVariable String username) {
+    public ResponseEntity<ApiResponse<UsersDto>> getUserProfile(@PathVariable String username) {
         System.out.println("Fetching profile for user: " + username);
-        UsersDto userDto = userService.getUser(username);
-        if (userDto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "User not found", "status", "fail"));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+if (auth == null) {
+    System.out.println("Authentication is null");
+} else {
+    System.out.println("Authentication type: " + auth.getClass());
+    System.out.println("Authenticated: " + auth.isAuthenticated());
+    System.out.println("Principal: " + auth.getPrincipal());
+    System.out.println("Authorities: " + auth.getAuthorities());
+}
+
+        try {
+            UsersDto user = userService.getUser(username);
+            if (user == null) {
+                throw new Exception("User now found");
+            }
+            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", "Success getting user", user, null);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("error", "Error getting user", null, e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        return ResponseEntity.ok(userDto);
     }
 
 }
