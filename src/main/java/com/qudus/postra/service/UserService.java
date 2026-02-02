@@ -2,6 +2,7 @@ package com.qudus.postra.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -88,12 +89,12 @@ public class UserService {
                 }
                 if (user == null)
                     return "fail";
-                // Always use email as JWT subject
-                return jwtService.generateToken(user.getEmail());
+                // use username as JWT subject
+                return jwtService.generateToken(user.getUserProfile().getUserName());
             } else {
                 return "fail";
             }
-        } catch (org.springframework.security.core.AuthenticationException e) {
+        } catch (AuthenticationException e) {
             System.out.println("failed " + e.getMessage());
             return "fail";
         }
@@ -102,11 +103,16 @@ public class UserService {
     public UsersDto getUser(String username) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        String lookupUsername = "me".equals(username) ? auth.getName() : username;
-
+        String lookupUsername = username;
+        if ("me".equals(username)) {
+            if (auth != null && auth.isAuthenticated()) {
+                lookupUsername = auth.getName();
+            } else {
+                return null;
+            }
+        }
 
         Users user = userRepo.findUserByUserProfile_UserName(lookupUsername).orElse(null);
-
 
         if (user == null) {
             return null;
@@ -115,7 +121,7 @@ public class UserService {
         System.out.println("User email: " + user.getEmail());
 
         boolean isCurrentUser = auth != null && auth.isAuthenticated() && auth.getName().equals(lookupUsername);
-        System.out.println("Auth name:" + auth.getName());
+        System.out.println("Auth name:" + (auth != null ? auth.getName() : "null"));
         if (isCurrentUser) {
             CurrentUserDto currentUserDto = new CurrentUserDto();
             currentUserDto.setEmail(user.getEmail());

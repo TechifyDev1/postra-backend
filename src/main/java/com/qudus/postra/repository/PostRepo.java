@@ -21,4 +21,6 @@ public interface PostRepo extends JpaRepository<Posts, Long> {
 
     Optional<Posts> findByAuthorUserNameAndSlug(String username, String slug);
 
+    Page<Posts> findByAuthorUserName(String username, Pageable pageable);
+
 }

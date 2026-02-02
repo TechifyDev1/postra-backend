@@ -59,6 +59,11 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
+        if ("undefined".equals(token)) {
+            System.out.println("Token is 'undefined', skipping JWT processing");
+            token = null;
+        }
+
         if (token == null) {
             System.out.println("No token found in header or cookie");
         }
@@ -73,7 +78,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        //  Set authentication in security context
+        // Set authentication in security context
         if (usernameOrEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 UserDetails userDetails = context.getBean(CustomUserDetailService.class)

@@ -175,4 +175,14 @@ public class PostsService {
         return returningPost;
     }
 
+    public Page<Posts> getPostsByUsername(String username, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Posts> posts = postRepo.findByAuthorUserName(username, pageable);
+        posts.getContent().forEach(post -> {
+            long likeCount = likeRepository.countByPostSlug(post.getSlug());
+            post.setLikeCounts(likeCount);
+        });
+        return posts;
+    }
+
 }

@@ -62,37 +62,41 @@ public class UserController {
             if (clientType == null || clientType.isBlank()) {
                 throw new Exception("Client Type is required");
             }
-    
+
             if (request.getUsernameOrEmail() == null || request.getUsernameOrEmail().isBlank()
                     || request.getPassword() == null || request.getPassword().isBlank()) {
                 throw new Exception("Username/email and password are required");
             }
-    
+
             String jwt = userService.verify(request.getUsernameOrEmail(), request.getPassword());
-    
+
             if ("fail".equalsIgnoreCase(jwt)) {
                 throw new Exception("Unable to verify user");
             }
-    
-            // boolean isLocal = "localhost".equalsIgnoreCase(httpServletRequest.getServerName());
-    
+
+            // boolean isLocal =
+            // "localhost".equalsIgnoreCase(httpServletRequest.getServerName());
+
             if ("web".equalsIgnoreCase(clientType)) {
                 ResponseCookie cookie = ResponseCookie.from("token", jwt)
                         .httpOnly(true)
-                        .secure(true)
+                        .secure(false)
                         .path("/")
                         .maxAge(Duration.ofDays(1))
                         .sameSite("Lax")
                         .build();
-                ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", "Login successful", userService.getUser(request.getUsernameOrEmail()), null);
-    
+                ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", "Login successful",
+                        userService.getUser(request.getUsernameOrEmail()), null);
+
                 return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
             }
-            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", jwt, userService.getUser(request.getUsernameOrEmail()), null);
+            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", jwt,
+                    userService.getUser(request.getUsernameOrEmail()), null);
             return new ResponseEntity<>(response, HttpStatus.OK);
-            
+
         } catch (Exception e) {
-            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("error", "Error logging you in", null, e.getMessage());
+            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("error", "Error logging you in", null,
+                    e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -102,14 +106,14 @@ public class UserController {
     public ResponseEntity<ApiResponse<UsersDto>> getUserProfile(@PathVariable String username) {
         System.out.println("Fetching profile for user: " + username);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-if (auth == null) {
-    System.out.println("Authentication is null");
-} else {
-    System.out.println("Authentication type: " + auth.getClass());
-    System.out.println("Authenticated: " + auth.isAuthenticated());
-    System.out.println("Principal: " + auth.getPrincipal());
-    System.out.println("Authorities: " + auth.getAuthorities());
-}
+        if (auth == null) {
+            System.out.println("Authentication is null");
+        } else {
+            System.out.println("Authentication type: " + auth.getClass());
+            System.out.println("Authenticated: " + auth.isAuthenticated());
+            System.out.println("Principal: " + auth.getPrincipal());
+            System.out.println("Authorities: " + auth.getAuthorities());
+        }
 
         try {
             UsersDto user = userService.getUser(username);
@@ -119,7 +123,8 @@ if (auth == null) {
             ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", "Success getting user", user, null);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("error", "Error getting user", null, e.getMessage());
+            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("error", "Error getting user", null,
+                    e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
     }
