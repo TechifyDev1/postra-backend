@@ -71,4 +71,8 @@ public class CommentService {
             return dto;
         }).toList();
     }
+
+    public long getCommentCount(Long postId) {
+        return commentRepo.countByPostId(postId);
+    }
 }

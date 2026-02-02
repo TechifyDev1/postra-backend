@@ -27,9 +27,31 @@ public class Posts {
     @Column(nullable = false, unique = true)
     private String slug;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
 
     @Transient
     private long likeCounts;
+
+    @Transient
+    private long commentCount;
+
+    public long getCommentCount() {
+        return commentCount;
+    }
+
+    public void setCommentCount(long commentCounts) {
+        this.commentCount = commentCounts;
+    }
 
     public long getLikeCounts() {
         return likeCounts;

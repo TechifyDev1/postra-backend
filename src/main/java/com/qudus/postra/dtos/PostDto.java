@@ -14,6 +14,15 @@ public class PostDto {
     private String authorProfilePic;
     private long likeCount;
     private Date createdAt;
+    private long commentCount;
+
+    public long getCommentCount() {
+        return commentCount;
+    }
+
+    public void setCommentCount(long commentCount) {
+        this.commentCount = commentCount;
+    }
 
     public String getAuthorProfilePic() {
         return authorProfilePic;
@@ -32,7 +41,7 @@ public class PostDto {
     }
 
     public PostDto(String title, String subTitle, String postBanner, String authorFullName, Long id,
-            String content, String slug, String authorUsername, String authorProfilePic, long likeCount, Date createdAt) {
+            String content, String slug, String authorUsername, String authorProfilePic, long likeCount, Date createdAt, long commentCount) {
         this.title = title;
         this.authorUsername = authorUsername;
         this.postBanner = postBanner;
@@ -44,6 +53,7 @@ public class PostDto {
         this.authorProfilePic = authorProfilePic;
         this.createdAt = createdAt;
         this.likeCount = likeCount;
+        this.commentCount = commentCount;
     }
 
     @Override

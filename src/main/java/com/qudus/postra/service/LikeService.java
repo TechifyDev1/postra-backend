@@ -38,7 +38,7 @@ public class LikeService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        Optional<Users> user = userRepo.findUserByEmail(email);
+        Optional<Users> user = userRepo.findUserByUserProfile_UserName(email);
         if (user.isEmpty()) {
             return Map.of("error", "No logged-in user found");
         }
@@ -84,7 +84,7 @@ public class LikeService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        Optional<Users> user = userRepo.findUserByEmail(email);
+        Optional<Users> user = userRepo.findUserByUserProfile_UserName(email);
         if (user.isEmpty()) {
             throw new RuntimeException("No logged-in user found");
         }

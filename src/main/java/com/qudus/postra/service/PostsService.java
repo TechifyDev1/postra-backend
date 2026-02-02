@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.qudus.postra.dtos.PostDto;
 import com.qudus.postra.model.Posts;
 import com.qudus.postra.model.UserProfile;
+import com.qudus.postra.repository.CommentRepo;
 import com.qudus.postra.repository.LikeRepo;
 import com.qudus.postra.repository.PostRepo;
 import com.qudus.postra.repository.UserProfileRepo;
@@ -32,6 +33,9 @@ public class PostsService {
     @Autowired
     private LikeRepo likeRepository;
 
+    @Autowired
+    private CommentRepo commentRepo;
+
     public List<Posts> getAll() {
         return postRepo.findAll();
     }
@@ -44,7 +48,7 @@ public class PostsService {
         if (email.isBlank() || email.isEmpty()) {
             throw new RuntimeException("username not found");
         }
-        Optional<UserProfile> userProfile = profileRepo.findByUser_Email(email);
+        Optional<UserProfile> userProfile = profileRepo.findUserByUserName(email);
         if (userProfile.isEmpty()) {
             throw new RuntimeException("User not found");
         }
@@ -62,7 +66,7 @@ public class PostsService {
         // New Post has zero likes initially
         return new PostDto(title, subTitle, headerImage, userProfile.get().getFullName(), savedPost.getId(), content,
                 slugString,
-                userProfile.get().getUserName(), post.getAuthor().getProfilePic(), 0L, post.getCreatedAt());
+                userProfile.get().getUserName(), post.getAuthor().getProfilePic(), 0L, post.getCreatedAt(), 0);
     }
 
     public boolean delete(String slug) {
@@ -84,7 +88,7 @@ public class PostsService {
             var authorUsername = post.getAuthor().getUserName(); // Or getUserProfile().getUserName()
 
             // Find the profile of the logged-in user
-            var profileOptional = profileRepo.findByUser_Email(email);
+            var profileOptional = profileRepo.findUserByUserName(email);
             if (profileOptional.isEmpty()) {
                 return false;
             }
@@ -114,7 +118,7 @@ public class PostsService {
         Posts post = postRepo.findBySlug(slug)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
-        UserProfile profile = profileRepo.findByUser_Email(email)
+        UserProfile profile = profileRepo.findUserByUserName(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User profile not found"));
 
         if (!profile.getUserName().equals(post.getAuthor().getUserName())) {
@@ -139,6 +143,7 @@ public class PostsService {
         Posts updated = postRepo.save(post);
 
         long likeCount = likeRepository.countByPost(updated);
+        long commentCount = commentRepo.countByPostId(updated.getId());
 
         return new PostDto(
                 updated.getTitle(),
@@ -151,7 +156,7 @@ public class PostsService {
                 updated.getAuthor().getUserName(),
                 updated.getAuthor().getProfilePic(),
                 likeCount,
-                updated.getCreatedAt());
+                updated.getCreatedAt(), commentCount);
     }
 
     public Page<Posts> getPosts(int page, int size) {
@@ -159,7 +164,9 @@ public class PostsService {
         Page<Posts> posts = postRepo.findAll(pageable);
         posts.getContent().forEach(post -> {
             long likeCount = likeRepository.countByPostSlug(post.getSlug());
+            long commentCount = commentRepo.countByPostId(post.getId());
             post.setLikeCounts(likeCount);
+            post.setCommentCount(commentCount);
             System.out.println("Post: " + post.getTitle() + ", Likes: " + likeCount);
         });
         return posts;
@@ -169,9 +176,11 @@ public class PostsService {
         Posts post = postRepo.findByAuthorUserNameAndSlug(username, slug).get();
         System.out.println(post);
         long likeCount = likeRepository.countByPost(post);
+        long commentCount = commentRepo.countByPostId(post.getId());
         PostDto returningPost = new PostDto(post.getTitle(), post.getSubTitle(), post.getHeaderImage(),
                 post.getAuthor().getFullName(), post.getId(), post.getContent(), post.getSlug(),
-                post.getAuthor().getUserName(), post.getAuthor().getProfilePic(), likeCount, post.getCreatedAt());
+                post.getAuthor().getUserName(), post.getAuthor().getProfilePic(), likeCount, post.getCreatedAt(),
+                commentCount);
         return returningPost;
     }
 
@@ -180,7 +189,9 @@ public class PostsService {
         Page<Posts> posts = postRepo.findByAuthorUserName(username, pageable);
         posts.getContent().forEach(post -> {
             long likeCount = likeRepository.countByPostSlug(post.getSlug());
+            long commentCount = commentRepo.countByPostId(post.getId());
             post.setLikeCounts(likeCount);
+            post.setCommentCount(commentCount);
         });
         return posts;
     }
