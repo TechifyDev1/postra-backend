@@ -38,7 +38,7 @@ public class CommentService {
             throw new RuntimeException("User not authenticated");
         }
         String email = authentication.getName();
-        Optional<UserProfile> userProfile = profileRepo.findByUser_Email(email);
+        Optional<UserProfile> userProfile = profileRepo.findUserByUserName(email);
         Optional<Posts> post = postRepo.findBySlug(postSlug);
         if (post.isEmpty()) {
             throw new RuntimeException("Post not found");

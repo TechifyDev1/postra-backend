@@ -63,9 +63,10 @@ public class SecurityConfig {
                         public void customize(
                                 AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry t) {
                             t
-                                .requestMatchers("/api/users/login", "/api/users/register", "/error", "/api/users/profile/**", "/api/upload", "/api/posts/", "/api/posts/**").permitAll()
+                                .requestMatchers("/api/users/login", "/api/users/register", "/error", "/api/users/profile/**", "/api/upload", "/api/posts/", "/api/posts/**", "/api/comments/**").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/api/users/update/**").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/api/posts/update/**").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated()
                                 .anyRequest().authenticated();
                         }
                     };
