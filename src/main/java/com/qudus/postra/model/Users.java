@@ -31,10 +31,10 @@ public class Users {
     private UserProfile userProfile;
 
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Followers> following;
+    private List<Follow> following;
 
     @OneToMany(mappedBy = "following", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Followers> followers;
+    private List<Follow> followers;
 
     // ====== Getters and Setters ======
 
@@ -73,16 +73,16 @@ public class Users {
     public void setUserProfile(UserProfile userProfile) {
         this.userProfile = userProfile;
     }
-    public List<Followers> getFollowing() {
+    public List<Follow> getFollowing() {
         return following;
     }
-    public void setFollowing(List<Followers> following) {
+    public void setFollowing(List<Follow> following) {
         this.following = following;
     }
-    public List<Followers> getFollowers() {
+    public List<Follow> getFollowers() {
         return followers;
     }
-    public void setFollowers(List<Followers> followers) {
+    public void setFollowers(List<Follow> followers) {
         this.followers = followers;
     }
 }

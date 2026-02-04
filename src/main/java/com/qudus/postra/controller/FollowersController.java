@@ -3,7 +3,8 @@ package com.qudus.postra.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,39 +47,47 @@ public class FollowersController {
     }
 
     @PostMapping("/api/follow/{targetUsername}")
-    public ResponseEntity<ApiResponse<String>> follow(@PathVariable String targetUsername) {
+    public ResponseEntity<ApiResponse<Object>> toggleFollow(
+            @PathVariable String targetUsername,
+            @AuthenticationPrincipal UserDetails user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>("error", "User not authenticated", null, null));
+        }
+
         try {
-            String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-            System.out.println(currentUserEmail);
-            boolean followed = followersService.follow(currentUserEmail, targetUsername);
-            if (followed) {
-                ApiResponse<String> response = new ApiResponse<String>("success", "Successfully followed " + targetUsername, targetUsername, null);
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            }
-            ApiResponse<String> response = new ApiResponse<String>("error", "Error following  " + targetUsername, targetUsername, "Error following user");
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            followersService.toggleFollow(user.getUsername(), targetUsername);
+            return ResponseEntity.ok(new ApiResponse<>("success", "Follow/Unfollow succeeded", null, null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>("error", e.getMessage(), null, null));
         } catch (Exception e) {
-            ApiResponse<String> response = new ApiResponse<String>("error", "Error following  " + targetUsername, targetUsername, e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("error", "Something went wrong", null, e));
         }
     }
 
-    @PostMapping("/api/unfollow/{targetUsername}")
-    public ResponseEntity<ApiResponse<String>> unFollow(@PathVariable String targetUsername) {
+    @GetMapping("/api/follow/is-following/{targetUsername}")
+    public ResponseEntity<ApiResponse<Boolean>> isFollowing(
+            @PathVariable String targetUsername,
+            @AuthenticationPrincipal UserDetails user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>("error", "User not authenticated", null, null));
+        }
+
         try {
-            String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-            System.out.println(currentUserEmail);
-            boolean unfollowed = followersService.follow(currentUserEmail, targetUsername);
-            if (unfollowed) {
-                ApiResponse<String> response = new ApiResponse<String>("success", "Successfully unfollowed " + targetUsername, targetUsername, null);
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            }
-            ApiResponse<String> response = new ApiResponse<String>("error", "Error unfollowing  " + targetUsername, targetUsername, "Error unfollowing " + targetUsername);
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            boolean following = followersService.isFollowing(targetUsername, user.getUsername());
+            return ResponseEntity.ok(new ApiResponse<>("success",
+                    following ? "following" : "not following",
+                    following,
+                    null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>("error", e.getMessage(), null, null));
         } catch (Exception e) {
-            ApiResponse<String> response = new ApiResponse<String>("error", "Error unfollowing  " + targetUsername, targetUsername, e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("error", "Something went wrong", null, e));
         }
     }
-
 }

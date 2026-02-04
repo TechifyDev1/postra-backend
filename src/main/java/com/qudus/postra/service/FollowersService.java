@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.qudus.postra.dtos.FollowerDto;
-import com.qudus.postra.model.FollowerId;
-import com.qudus.postra.model.Followers;
+import com.qudus.postra.model.FollowId;
+import com.qudus.postra.model.Follow;
 import com.qudus.postra.model.UserProfile;
 import com.qudus.postra.model.Users;
 import com.qudus.postra.repository.FollowerRepo;
@@ -22,69 +22,23 @@ public class FollowersService {
     @Autowired
     private FollowerRepo followersRepo;
 
-    public boolean follow(String followerUsername, String followingUsername) {
-        var extractedUsername = userRepo.findUserByEmail(followerUsername).get().getUserProfile().getUserName();
-        // System.out.println(extractedUsername);
-        try {
-            Users follower = userRepo.findUserByUserProfile_UserName(extractedUsername)
-                    .orElseThrow(() -> new RuntimeException("Follower user not found"));
+    public void toggleFollow(String followerUsername, String followingUsername) {
+        Users follower = userRepo.findUserByUserProfile_UserName(followerUsername)
+                .orElseThrow(() -> new RuntimeException("Follower user not found"));
 
-            Users following = userRepo.findUserByUserProfile_UserName(followingUsername)
-                    .orElseThrow(() -> new RuntimeException("User to follow not found"));
+        Users following = userRepo.findUserByUserProfile_UserName(followingUsername)
+                .orElseThrow(() -> new RuntimeException("User to follow not found"));
 
-            // Check if the user is trying to follow themselves
-            if (follower.getId().equals(following.getId())) {
-                throw new RuntimeException("You cannot follow yourself");
-            }
-
-            // Check if already following
-            boolean alreadyFollowing = followersRepo.existsByFollowerAndFollowing(follower, following);
-            if (alreadyFollowing) {
-                return false; // already following
-            }
-
-            // Create new follow relationship
-            Followers follow = new Followers();
-            follow.setFollower(follower);
-            follow.setFollowing(following);
-            follow.setId(new FollowerId(follower.getId(), following.getId()));
-
-            followersRepo.save(follow);
-            return true;
-
-        } catch (Exception e) {
-            System.out.println("Follow failed: " + e.getMessage());
-            return false;
+        if (follower.getId().equals(following.getId())) {
+            throw new RuntimeException("You cannot follow yourself");
         }
-    }
 
-    public boolean unfollow(String followerUsername, String followingUsername) {
-        var extractedUsername = userRepo.findUserByEmail(followerUsername).get().getUserProfile().getUserName();
-        System.out.println(extractedUsername);
+        boolean alreadyFollowing = followersRepo.existsByFollowerAndFollowing(follower, following);
 
-        try {
-            Users follower = userRepo.findUserByUserProfile_UserName(extractedUsername)
-                    .orElseThrow(() -> new RuntimeException("Follower user not found"));
-
-            Users following = userRepo.findUserByUserProfile_UserName(followingUsername)
-                    .orElseThrow(() -> new RuntimeException("User to unfollow not found"));
-
-            // Check if relationship exists
-            FollowerId id = new FollowerId(follower.getId(), following.getId());
-            boolean exists = followersRepo.existsById(id);
-            if (!exists) {
-                System.out.println("User is not following");
-                return false;
-            }
-
-            // Delete the follow relationship
-            followersRepo.deleteById(id);
-            System.out.println(followerUsername + " unfollowed " + followingUsername);
-            return true;
-
-        } catch (Exception e) {
-            System.out.println("Unfollow failed: " + e.getMessage());
-            return false;
+        if (alreadyFollowing) {
+            followersRepo.deleteById(new FollowId(follower.getId(), following.getId()));
+        } else {
+            followersRepo.save(new Follow(follower, following));
         }
     }
 
@@ -92,7 +46,7 @@ public class FollowersService {
         Users user = userRepo.findUserByUserProfile_UserName(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Followers> following = followersRepo.findByFollower(user);
+        List<Follow> following = followersRepo.findByFollower(user);
 
         return following.stream().map(f -> {
             UserProfile profile = f.getFollowing().getUserProfile();
@@ -110,7 +64,7 @@ public class FollowersService {
         Users user = userRepo.findUserByUserProfile_UserName(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Followers> followers = followersRepo.findByFollowing(user);
+        List<Follow> followers = followersRepo.findByFollowing(user);
 
         return followers.stream().map(f -> {
             UserProfile profile = f.getFollower().getUserProfile();
@@ -122,6 +76,16 @@ public class FollowersService {
 
             return dto;
         }).toList();
+    }
+
+    public boolean isFollowing(String followingUsername, String followerUsername) {
+        Users follower = userRepo.findUserByUserProfile_UserName(followerUsername)
+                .orElseThrow(() -> new RuntimeException("Follower user not found"));
+
+        Users following = userRepo.findUserByUserProfile_UserName(followingUsername)
+                .orElseThrow(() -> new RuntimeException("User to follow not found"));
+
+        return followersRepo.existsByFollowerAndFollowing(follower, following);
     }
 
 }

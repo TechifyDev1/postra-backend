@@ -5,15 +5,15 @@ import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
-public class FollowerId implements Serializable {
+public class FollowId implements Serializable {
 
     private Long followerId;
     private Long followingId;
 
     // Constructors
-    public FollowerId() {}
+    public FollowId() {}
 
-    public FollowerId(Long followerId, Long followingId) {
+    public FollowId(Long followerId, Long followingId) {
         this.followerId = followerId;
         this.followingId = followingId;
     }
@@ -39,8 +39,8 @@ public class FollowerId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof FollowerId)) return false;
-        FollowerId that = (FollowerId) o;
+        if (!(o instanceof FollowId)) return false;
+        FollowId that = (FollowId) o;
         return Objects.equals(followerId, that.followerId) &&
                Objects.equals(followingId, that.followingId);
     }

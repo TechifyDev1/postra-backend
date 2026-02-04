@@ -4,18 +4,27 @@ import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "followers")
-public class Followers {
+@Table(name = "follows")
+public class Follow {
+
+    protected Follow(){}
+
+    public Follow(Users follower, Users following) {
+        this.follower = follower;
+        this.following = following;
+        this.id = new FollowId();
+        
+    }
 
     @EmbeddedId
-    private FollowerId id = new FollowerId(); // Composite key using @Embeddable class
+    private FollowId id = new FollowId(); // Composite key using @Embeddable class
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("followerId")
     @JoinColumn(name = "follower_id")
     private Users follower;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("followingId")
     @JoinColumn(name = "following_id")
     private Users following;
@@ -26,11 +35,11 @@ public class Followers {
 
     // ====== Getters and Setters ======
 
-    public FollowerId getId() {
+    public FollowId getId() {
         return id;
     }
 
-    public void setId(FollowerId id) {
+    public void setId(FollowId id) {
         this.id = id;
     }
 
