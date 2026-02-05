@@ -115,32 +115,34 @@ public class PostsService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
 
-        Posts post = postRepo.findBySlug(slug)
+        Posts existingPost = postRepo.findBySlug(slug)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
         UserProfile profile = profileRepo.findUserByUserName(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User profile not found"));
 
-        if (!profile.getUserName().equals(post.getAuthor().getUserName())) {
+        if (!profile.getUserName().equals(existingPost.getAuthor().getUserName())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You’re not allowed to update this post");
         }
 
         if (postDto.getTitle() != null) {
-            post.setTitle(postDto.getTitle());
-            Slug slug2 = new Slug(postDto.getTitle());
-            post.setSlug(slug2.generateUniqueSlug());
+            existingPost.setTitle(postDto.getTitle());
+            if (existingPost.getTitle() != postDto.getTitle()) {
+                Slug slug2 = new Slug(postDto.getTitle());
+                existingPost.setSlug(slug2.generateUniqueSlug());
+            }
         }
         if (postDto.getSubTitle() != null) {
-            post.setSubTitle(postDto.getSubTitle());
+            existingPost.setSubTitle(postDto.getSubTitle());
         }
         if (postDto.getContent() != null) {
-            post.setContent(postDto.getContent());
+            existingPost.setContent(postDto.getContent());
         }
         if (postDto.getPostBanner() != null) {
-            post.setHeaderImage(postDto.getPostBanner());
+            existingPost.setHeaderImage(postDto.getPostBanner());
         }
 
-        Posts updated = postRepo.save(post);
+        Posts updated = postRepo.save(existingPost);
 
         long likeCount = likeRepository.countByPost(updated);
         long commentCount = commentRepo.countByPostId(updated.getId());

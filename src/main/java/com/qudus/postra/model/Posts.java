@@ -30,7 +30,6 @@ public class Posts {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
-
     public List<Comment> getComments() {
         return comments;
     }
@@ -100,19 +99,18 @@ public class Posts {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> mediaList;
 
-    // @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval =
-    // true)
-    // private List<Like> likesList;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likesList;
 
     // ====== Getters and Setters ======
 
-    // public List<Like> getLikesList() {
-    // return likesList;
-    // }
+    public List<Like> getLikesList() {
+        return likesList;
+    }
 
-    // public void setLikesList(List<Like> likesList) {
-    // this.likesList = likesList;
-    // }
+    public void setLikesList(List<Like> likesList) {
+        this.likesList = likesList;
+    }
 
     public Long getId() {
         return id;
