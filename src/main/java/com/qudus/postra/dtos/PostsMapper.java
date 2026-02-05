@@ -14,7 +14,7 @@ public class PostsMapper {
                 posts.getAuthor().getProfilePic(),
                 posts.getSlug(),
                 posts.getAuthor().getFullName(),
-                posts.getLikeCounts(), posts.getCommentCount());
+                posts.getLikeCounts(), posts.getCommentCount(), posts.getCreatedAt());
                 
     }
 }
