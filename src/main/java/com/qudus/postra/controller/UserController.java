@@ -118,14 +118,16 @@ public class UserController {
         try {
             UsersDto user = userService.getUser(username);
             if (user == null) {
-                throw new Exception("User now found");
+                ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("error", "User not found", null,
+                        null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
             ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", "Success getting user", user, null);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("error", "Error getting user", null,
                     e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

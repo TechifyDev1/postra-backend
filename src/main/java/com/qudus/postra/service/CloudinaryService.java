@@ -44,4 +44,9 @@ public class CloudinaryService {
             return false;
         }
     }
+
+    public Map<String, Object> getSignature(Map<String, Object> paramsToSign) {
+        String signature = cloudinary.apiSignRequest(paramsToSign, cloudinary.config.apiSecret);
+        return Map.of("signature", signature);
+    }
 }

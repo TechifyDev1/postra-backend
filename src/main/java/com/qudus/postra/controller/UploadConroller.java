@@ -2,14 +2,17 @@ package com.qudus.postra.controller;
 
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.qudus.postra.model.ApiResponse;
 import com.qudus.postra.service.CloudinaryService;
 
 @RestController
@@ -43,5 +46,16 @@ public class UploadConroller {
         } else {
             return ResponseEntity.badRequest().body("Unable to delete");
         }
+    }
+
+    @PostMapping("sign")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getSignedUrl(@RequestBody Map<String, Object> paramsToSign) {
+        if(paramsToSign.isEmpty() || paramsToSign == null) {
+            ApiResponse<Map<String, Object>> response = new ApiResponse<Map<String,Object>>("error", "params to sign can't be empty", null, null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        var res = cloudinaryService.getSignature(paramsToSign);
+        ApiResponse<Map<String, Object>> response = new ApiResponse<Map<String,Object>>("success", "Sucess getting signed", res, null);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
