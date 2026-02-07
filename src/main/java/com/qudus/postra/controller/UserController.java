@@ -83,10 +83,10 @@ public class UserController {
                 @SuppressWarnings("null")
                 ResponseCookie cookie = ResponseCookie.from("token", jwt)
                         .httpOnly(true)
-                        .secure(false)
+                        .secure(true)
                         .path("/")
                         .maxAge(Duration.ofDays(1))
-                        .sameSite("Lax")
+                        .sameSite("None")
                         .build();
                 ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", "Login successful",
                         userService.getUser(request.getUsernameOrEmail()), null);
