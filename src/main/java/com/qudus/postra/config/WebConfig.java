@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         System.out.println(registry.getClass().toString());
         registry.addMapping("/api/**")
-                .allowedOrigins("https://postra-frontend.vercel.app/")
+                .allowedOrigins("https://postra-frontend.vercel.app")
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
                 .allowCredentials(true);
