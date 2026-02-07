@@ -8,6 +8,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpHeaders;
 
@@ -18,6 +19,7 @@ import com.qudus.postra.model.ApiResponse;
 import com.qudus.postra.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/users")
@@ -78,6 +80,7 @@ public class UserController {
             // "localhost".equalsIgnoreCase(httpServletRequest.getServerName());
 
             if ("web".equalsIgnoreCase(clientType)) {
+                @SuppressWarnings("null")
                 ResponseCookie cookie = ResponseCookie.from("token", jwt)
                         .httpOnly(true)
                         .secure(false)
@@ -104,17 +107,6 @@ public class UserController {
 
     @GetMapping("/profile/{username}")
     public ResponseEntity<ApiResponse<UsersDto>> getUserProfile(@PathVariable String username) {
-        System.out.println("Fetching profile for user: " + username);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
-            System.out.println("Authentication is null");
-        } else {
-            System.out.println("Authentication type: " + auth.getClass());
-            System.out.println("Authenticated: " + auth.isAuthenticated());
-            System.out.println("Principal: " + auth.getPrincipal());
-            System.out.println("Authorities: " + auth.getAuthorities());
-        }
-
         try {
             UsersDto user = userService.getUser(username);
             if (user == null) {
@@ -129,6 +121,47 @@ public class UserController {
                     e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<Object>> updateProfile(
+            @RequestBody com.qudus.postra.dtos.UpdateUserRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return new ResponseEntity<>(new ApiResponse<>("error", "Unauthorized", null, null),
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        String username = auth.getName();
+        boolean success = userService.updateUserProfile(username, request);
+
+        if (success) {
+            return ResponseEntity.ok(new ApiResponse<>("success", "Profile updated successfully", null, null));
+        } else {
+            return new ResponseEntity<>(new ApiResponse<>("error", "Failed to update profile", null, null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            // Automatically clears SecurityContext and invalidates session
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+
+        // Explicitly overwrite the token cookie with an expired one
+        @SuppressWarnings("null")
+        ResponseCookie cookie = ResponseCookie.from("token", null)
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0) // Deletes the cookie
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body("Logged out successfully");
     }
 
 }

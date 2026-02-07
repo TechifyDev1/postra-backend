@@ -13,6 +13,7 @@ import com.qudus.postra.dtos.CurrentUserDto;
 import com.qudus.postra.dtos.UsersDto;
 import com.qudus.postra.model.UserProfile;
 import com.qudus.postra.model.Users;
+import com.qudus.postra.repository.PostRepo;
 import com.qudus.postra.repository.UserProfileRepo;
 import com.qudus.postra.repository.UserRepo;
 
@@ -27,6 +28,9 @@ public class UserService {
 
     @Autowired
     private UserProfileRepo userProfileRepo;
+
+    @Autowired
+    private PostRepo postRepo;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -118,10 +122,8 @@ public class UserService {
             return null;
         }
 
-        System.out.println("User email: " + user.getEmail());
-
         boolean isCurrentUser = auth != null && auth.isAuthenticated() && auth.getName().equals(lookupUsername);
-        System.out.println("Auth name:" + (auth != null ? auth.getName() : "null"));
+        long userPostCount = postRepo.countByAuthorUserName(username);
         if (isCurrentUser) {
             CurrentUserDto currentUserDto = new CurrentUserDto();
             currentUserDto.setEmail(user.getEmail());
@@ -130,7 +132,10 @@ public class UserService {
             currentUserDto.setNumOfFollowers(user.getFollowers().size());
             currentUserDto.setNumOfFollowing(user.getFollowing().size());
             currentUserDto.setProfilePictureUrl(user.getUserProfile().getProfilePic());
+            currentUserDto.setBgImage(user.getUserProfile().getBgImage());
             currentUserDto.setCurrentUser(true);
+            currentUserDto.setPostCount(userPostCount);
+            currentUserDto.setBio(user.getUserProfile().getBio());
             return currentUserDto;
         } else {
             UsersDto userDto = new UsersDto();
@@ -139,7 +144,38 @@ public class UserService {
             userDto.setNumOfFollowers(user.getFollowers().size());
             userDto.setNumOfFollowing(user.getFollowing().size());
             userDto.setProfilePictureUrl(user.getUserProfile().getProfilePic());
+            userDto.setBgImage(user.getUserProfile().getBgImage());
+            userDto.setPostCount(userPostCount);
+            userDto.setBio(user.getUserProfile().getBio());
             return userDto;
+        }
+    }
+    public boolean updateUserProfile(String username, com.qudus.postra.dtos.UpdateUserRequest request) {
+        try {
+            Users user = userRepo.findUserByUserProfile_UserName(username).orElse(null);
+            if (user == null) {
+                return false;
+            }
+
+            UserProfile profile = user.getUserProfile();
+            if (request.getFullName() != null && !request.getFullName().isBlank()) {
+                profile.setFullName(request.getFullName());
+            }
+            if (request.getBio() != null) {
+                profile.setBio(request.getBio());
+            }
+            if (request.getProfilePic() != null) {
+                profile.setProfilePic(request.getProfilePic());
+            }
+            if (request.getBgImage() != null) {
+                profile.setBgImage(request.getBgImage());
+            }
+
+            userProfileRepo.save(profile);
+            return true;
+        } catch (Exception e) {
+            System.out.println("❌ Unable to update user profile: " + e.getMessage());
+            return false;
         }
     }
 

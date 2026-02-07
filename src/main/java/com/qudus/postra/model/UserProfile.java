@@ -29,6 +29,9 @@ public class UserProfile {
     @Column(name = "profile_pic")
     private String profilePic;
 
+    @Column(name = "bg_image")
+    private String bgImage;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", updatable = false)
     private Date createdAt = new Date();
@@ -81,6 +84,14 @@ public class UserProfile {
 
     public void setProfilePic(String profilePic) {
         this.profilePic = profilePic;
+    }
+
+    public String getBgImage() {
+        return bgImage;
+    }
+
+    public void setBgImage(String bgImage) {
+        this.bgImage = bgImage;
     }
 
     public Date getCreatedAt() {
