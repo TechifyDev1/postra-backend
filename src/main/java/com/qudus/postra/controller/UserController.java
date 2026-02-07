@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpHeaders;
 
 import com.qudus.postra.dtos.LoginRequest;
+import com.qudus.postra.dtos.LoginResponse;
 import com.qudus.postra.dtos.RegisterRequest;
 import com.qudus.postra.dtos.UsersDto;
 import com.qudus.postra.model.ApiResponse;
@@ -53,7 +54,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UsersDto>> login(
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
             @RequestBody LoginRequest request,
             @RequestHeader(name = "X-Client-Type", required = false) String clientType,
             HttpServletRequest httpServletRequest) {
@@ -76,8 +77,17 @@ public class UserController {
                 throw new Exception("Unable to verify user");
             }
 
-            // boolean isLocal =
-            // "localhost".equalsIgnoreCase(httpServletRequest.getServerName());
+            UsersDto userDto = userService.getUser(request.getUsernameOrEmail());
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setToken(jwt);
+            loginResponse.setBgImage(userDto.getBgImage());
+            loginResponse.setBio(userDto.getBio());
+            loginResponse.setFullName(userDto.getFullName());
+            loginResponse.setNumOfFollowers(userDto.getNumOfFollowers());
+            loginResponse.setNumOfFollowing(userDto.getNumOfFollowing());
+            loginResponse.setPostCount(userDto.getPostCount());
+            loginResponse.setProfilePictureUrl(userDto.getProfilePictureUrl());
+            loginResponse.setUsername(userDto.getUsername());
 
             if ("web".equalsIgnoreCase(clientType)) {
                 @SuppressWarnings("null")
@@ -88,17 +98,17 @@ public class UserController {
                         .maxAge(Duration.ofDays(1))
                         .sameSite("None")
                         .build();
-                ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", "Login successful",
-                        userService.getUser(request.getUsernameOrEmail()), null);
+                ApiResponse<LoginResponse> response = new ApiResponse<LoginResponse>("success", "Login successful",
+                        loginResponse, null);
 
                 return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(response);
             }
-            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("success", jwt,
-                    userService.getUser(request.getUsernameOrEmail()), null);
+            ApiResponse<LoginResponse> response = new ApiResponse<LoginResponse>("success", jwt,
+                    loginResponse, null);
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
-            ApiResponse<UsersDto> response = new ApiResponse<UsersDto>("error", "Error logging you in", null,
+            ApiResponse<LoginResponse> response = new ApiResponse<LoginResponse>("error", "Error logging you in", null,
                     e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
