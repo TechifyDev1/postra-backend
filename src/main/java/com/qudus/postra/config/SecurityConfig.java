@@ -94,6 +94,7 @@ public class SecurityConfig {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         try {
