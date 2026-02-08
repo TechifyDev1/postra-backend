@@ -116,7 +116,12 @@ public class UserService {
             }
         }
 
-        Users user = userRepo.findUserByUserProfile_UserName(lookupUsername).orElse(null);
+        Users user;
+        if (lookupUsername.contains("@")) {
+            user = userRepo.findUserByEmail(lookupUsername).orElse(null);
+        } else {
+            user = userRepo.findUserByUserProfile_UserName(lookupUsername).orElse(null);
+        }
 
         if (user == null) {
             return null;
@@ -150,6 +155,7 @@ public class UserService {
             return userDto;
         }
     }
+
     public boolean updateUserProfile(String username, com.qudus.postra.dtos.UpdateUserRequest request) {
         try {
             Users user = userRepo.findUserByUserProfile_UserName(username).orElse(null);
