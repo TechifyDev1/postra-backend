@@ -35,6 +35,8 @@ public class PostsService {
 
     @Autowired
     private CommentRepo commentRepo;
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     public List<Posts> getAll() {
         return postRepo.findAll();
@@ -97,6 +99,15 @@ public class PostsService {
 
             // Compare usernames
             if (currentUsername.equals(authorUsername)) {
+                // Delete image from Cloudinary if exists
+                String headerImage = post.getHeaderImage();
+                if (headerImage != null && !headerImage.isBlank()) {
+                    String publicId = extractPublicId(headerImage);
+                    if (publicId != null) {
+                        cloudinaryService.delete(publicId);
+                    }
+                }
+
                 postRepo.delete(post);
                 return true;
             }
@@ -106,6 +117,20 @@ public class PostsService {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return false;
+        }
+    }
+
+    private String extractPublicId(String imageUrl) {
+        try {
+            // Example: https://res.cloudinary.com/demo/image/upload/v1570979139/sample.jpg
+            // Public ID: sample
+            String[] parts = imageUrl.split("/");
+            String filename = parts[parts.length - 1];
+            String publicId = filename.substring(0, filename.lastIndexOf('.'));
+            return publicId;
+        } catch (Exception e) {
+            System.out.println("Error extracting public ID: " + e.getMessage());
+            return null;
         }
     }
 
