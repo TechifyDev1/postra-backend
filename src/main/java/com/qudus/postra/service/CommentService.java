@@ -48,6 +48,7 @@ public class CommentService {
         if (userProfile.isPresent()) {
             comment.setAuthorUsername(userProfile.get().getUserName());
             commentDto.setAuthorUsername(comment.getAuthorUsername());
+            commentDto.setProfilePictureUrl(userProfile.get().getProfilePic());
         } else {
             throw new RuntimeException("User profile not found");
         }
@@ -68,6 +69,13 @@ public class CommentService {
             CommentDto dto = new CommentDto();
             dto.setContent(comment.getContent());
             dto.setAuthorUsername(comment.getAuthorUsername());
+
+            // Fetch profile picture from UserProfile
+            Optional<UserProfile> userProfile = profileRepo.findUserByUserName(comment.getAuthorUsername());
+            if (userProfile.isPresent()) {
+                dto.setProfilePictureUrl(userProfile.get().getProfilePic());
+            }
+
             return dto;
         }).toList();
     }

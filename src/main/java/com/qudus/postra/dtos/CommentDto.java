@@ -3,6 +3,7 @@ package com.qudus.postra.dtos;
 public class CommentDto {
     private String content;
     private String authorUsername;
+    private String profilePictureUrl;
 
     public String getContent() {
         return content;
@@ -18,5 +19,13 @@ public class CommentDto {
 
     public void setAuthorUsername(String authorUsername) {
         this.authorUsername = authorUsername;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
     }
 }
