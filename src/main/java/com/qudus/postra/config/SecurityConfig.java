@@ -57,28 +57,29 @@ public class SecurityConfig {
             };
 
             // Authorize routes
-            Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> custReqConf =
-                    new Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry>() {
-                        @Override
-                        public void customize(
-                                AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry t) {
-                            t
-                                .requestMatchers("/api/users/login", "/api/users/register", "/error", "/api/users/profile/**", "/api/upload", "/api/posts/", "/api/posts/**", "/api/comments/**").permitAll()
-                                .requestMatchers(HttpMethod.PUT, "/api/users/update/**").authenticated()
-                                .requestMatchers(HttpMethod.PUT, "/api/posts/update/**").authenticated()
-                                .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated()
-                                .anyRequest().authenticated();
-                        }
-                    };
+            Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> custReqConf = new Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry>() {
+                @Override
+                public void customize(
+                        AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry t) {
+                    t
+                            .requestMatchers("/api/users/login", "/api/users/register", "/error",
+                                    "/api/users/profile/**", "/api/upload", "/api/posts/", "/api/posts/**",
+                                    "/api/comments/**")
+                            .permitAll()
+                            .requestMatchers(HttpMethod.PUT, "/api/users/update/**").authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/api/posts/update/**").authenticated()
+                            .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated()
+                            .anyRequest().authenticated();
+                }
+            };
 
             // Stateless session
-            Customizer<SessionManagementConfigurer<HttpSecurity>> custSession =
-                    new Customizer<SessionManagementConfigurer<HttpSecurity>>() {
-                        @Override
-                        public void customize(SessionManagementConfigurer<HttpSecurity> t) {
-                            t.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-                        }
-                    };
+            Customizer<SessionManagementConfigurer<HttpSecurity>> custSession = new Customizer<SessionManagementConfigurer<HttpSecurity>>() {
+                @Override
+                public void customize(SessionManagementConfigurer<HttpSecurity> t) {
+                    t.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                }
+            };
 
             return http
                     .csrf(custCsrf)
